@@ -1,0 +1,142 @@
+generator client {
+  provider       = "prisma-client-js"
+  compilerBuild  = "small"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Service {
+  id              String   @id @default(cuid())
+  key             String   @unique
+  name            String
+  url             String
+  method          HttpMethod
+  expectedStatus  Int      @default(200)
+  timeoutMs       Int      @default(10000)
+  optionalKeyword String?
+  isEnabled       Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  checks    Check[]
+  incidents Incident[]
+}
+
+model Check {
+  id         String   @id @default(cuid())
+  serviceId  String
+  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  checkedAt  DateTime @default(now())
+  ok         Boolean
+  statusCode Int?
+  latencyMs  Int?
+  error      String?
+
+  createdAt DateTime @default(now())
+
+  @@index([serviceId, checkedAt])
+}
+
+model Incident {
+  id            String   @id @default(cuid())
+  serviceId     String
+  service       Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  startedAt     DateTime
+  resolvedAt    DateTime?
+  durationMs    BigInt?
+  rootCauseGuess String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([serviceId, startedAt])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model MarketingCarousel {
+  id        String            @id @default(cuid())
+  forDate   DateTime          @db.Date
+  title     String
+  emotionalThemeIndex  Int    @default(0)
+  financialThemeIndex  Int    @default(0)
+  nutritionThemeIndex  Int    @default(0)
+  instagramPublishStatus InstagramPublishStatus @default(NOT_GENERATED)
+  imagesGeneratedAt      DateTime?
+  approvedAt               DateTime?
+  publishedAt              DateTime?
+  instagramMediaId         String?
+  instagramPublishError      String?
+  phrasePublishStatus       InstagramPublishStatus @default(NOT_GENERATED)
+  phraseGeneratedAt         DateTime?
+  phraseApprovedAt          DateTime?
+  phrasePublishedAt         DateTime?
+  phraseInstagramMediaId    String?
+  phrasePublishError        String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  slides    MarketingSlide[]
+
+  @@unique([forDate])
+}
+
+model MarketingInstagramConfig {
+  id                  String   @id @default("default")
+  businessAccountId   String?
+  accessToken         String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+enum InstagramPublishStatus {
+  NOT_GENERATED
+  PENDING_APPROVAL
+  APPROVED
+  PUBLISHED
+  PUBLISH_FAILED
+}
+
+model MarketingRotationState {
+  id             String   @id @default("default")
+  emotionalNext  Int      @default(0)
+  financialNext  Int      @default(0)
+  nutritionNext  Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model MarketingSlide {
+  id          String             @id @default(cuid())
+  carouselId  String
+  carousel    MarketingCarousel  @relation(fields: [carouselId], references: [id], onDelete: Cascade)
+  order       Int
+  pillar      ContentPillar
+  headline    String
+  body        String
+  hashtags    String?
+
+  @@index([carouselId, order])
+}
+
+enum ContentPillar {
+  COVER
+  EMOTIONAL
+  FINANCIAL
+  NUTRITION
+  CLOSING
+}
+
+enum HttpMethod {
+  GET
+  HEAD
+}
+
