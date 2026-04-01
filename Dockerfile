@@ -22,7 +22,7 @@ COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/prisma.config.ts ./prisma.config.ts
 COPY --from=build /app/src ./src
 
-EXPOSE 3000
+EXPOSE 3002
 
 CMD ["npm", "run", "start"]
 

@@ -24,7 +24,7 @@ cp .docker.env.example .docker.env
 docker compose up -d --build
 ```
 
-Luego abre el dashboard en `http://<tu-servidor>:3000`.
+Luego abre el dashboard en `http://<tu-servidor>:3002`.
 
 Nota: `docker compose` carga variables desde `.env` automáticamente. Para evitar mezclar con `DATABASE_URL` local, usa `.docker.env` y ejecútalo así:
 
@@ -94,7 +94,7 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3002](http://localhost:3002) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

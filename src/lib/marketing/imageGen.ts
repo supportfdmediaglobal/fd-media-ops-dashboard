@@ -4,7 +4,7 @@ export function getBaseUrl() {
   return (
     process.env.APP_BASE_URL?.trim() ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-    "http://localhost:3000"
+    "http://localhost:3002"
   );
 }
 

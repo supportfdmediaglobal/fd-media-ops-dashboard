@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "postinstall": "node scripts/run-prisma-generate.mjs",
-    "dev": "next dev --webpack",
+    "dev": "next dev --webpack -p 3002",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3002",
     "lint": "eslint",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",

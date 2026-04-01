@@ -20,13 +20,14 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
+      PORT: "3002"
       DATABASE_URL: postgresql://postgres:postgres@db:5432/fd_ops?schema=public
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       AUTH_SECRET: ${AUTH_SECRET}
       MONITOR_INTERVAL_SECONDS: ${MONITOR_INTERVAL_SECONDS:-60}
     ports:
-      - "3000:3000"
+      - "3002:3002"
 
   worker:
     build:
