@@ -20,7 +20,7 @@ function clientLooksStale(client: PrismaClient): boolean {
     .marketingCarousel === "undefined";
 }
 
-let prisma: PrismaClient =
+const prisma: PrismaClient =
   global.prisma && !clientLooksStale(global.prisma)
     ? global.prisma
     : createPrisma();

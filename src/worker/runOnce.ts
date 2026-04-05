@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { ensureDefaultServices } from "@/lib/seed";
 import { runHttpCheck } from "@/lib/monitor";
 import { deriveIncidentForCheck } from "@/lib/incidentLogic";
+import { getAlertSinkForService } from "@/lib/agent/resolveSink";
 
 export async function runMonitorOnce() {
   await ensureDefaultServices();
@@ -31,7 +32,9 @@ export async function runMonitorOnce() {
       },
     });
 
+    const sink = await getAlertSinkForService(service.id);
     await deriveIncidentForCheck(service.id, result.ok, {
+      sink,
       serviceMeta: { key: service.key, name: service.name, url: service.url },
       lastError: result.error,
     });

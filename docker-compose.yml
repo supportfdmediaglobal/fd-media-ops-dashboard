@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16
+    image: postgres:17
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -26,6 +26,12 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       AUTH_SECRET: ${AUTH_SECRET}
       MONITOR_INTERVAL_SECONDS: ${MONITOR_INTERVAL_SECONDS:-60}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
     ports:
       - "3002:3002"
 
@@ -43,6 +49,12 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       AUTH_SECRET: ${AUTH_SECRET}
       MONITOR_INTERVAL_SECONDS: ${MONITOR_INTERVAL_SECONDS:-60}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
     command: ["npm", "run", "worker:dev"]
 
 volumes:

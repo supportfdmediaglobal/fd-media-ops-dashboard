@@ -1,4 +1,5 @@
 import "dotenv/config";
+
 import { runMonitorOnce } from "@/worker/runOnce";
 
 function parseIntervalSeconds(): number {

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FD Media Ops Dashboard",
+  title: "FD Media Ops",
   description: "FD Media Global monitoring & operations dashboard",
 };
 

@@ -20,6 +20,19 @@ export default function Home() {
             </Link>
           </section>
           <section className="rounded-2xl border border-black/10 bg-white p-6 dark:border-white/10 dark:bg-zinc-950">
+            <div className="text-sm font-semibold">Agente</div>
+            <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              Alertas por correo cuando un servicio cae o se recupera (FD Bienestar,
+              Virtual Teacher, etc.).
+            </div>
+            <Link
+              href="/agent"
+              className="mt-4 inline-flex rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            >
+              Configurar agente
+            </Link>
+          </section>
+          <section className="rounded-2xl border border-black/10 bg-white p-6 dark:border-white/10 dark:bg-zinc-950">
             <div className="text-sm font-semibold">Marketing</div>
             <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
               Carrusel diario para Instagram (FD Bienestar): emocional,

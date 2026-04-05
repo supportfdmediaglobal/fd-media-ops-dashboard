@@ -55,12 +55,9 @@ export function LoginClient({ nextPath }: { nextPath: string }) {
   }
 
   return (
-    <div className="min-h-full bg-zinc-50 text-zinc-950 dark:bg-black dark:text-zinc-50">
-      <div className="mx-auto flex w-full max-w-md flex-col px-6 py-16">
-        <h1 className="text-xl font-semibold tracking-tight">
-          FD Media Ops Dashboard
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+    <main className="flex flex-1 flex-col">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-6 py-12">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
           Inicia sesión para acceder al monitoreo y reportes.
         </p>
 
@@ -107,7 +104,7 @@ export function LoginClient({ nextPath }: { nextPath: string }) {
           `ADMIN_PASSWORD`) y se crea automáticamente si no existe.
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

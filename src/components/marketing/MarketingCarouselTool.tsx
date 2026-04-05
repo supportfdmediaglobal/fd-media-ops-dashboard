@@ -2,11 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatThemePosition, getAccount } from "@/lib/marketing/carouselContent";
-import {
-  PILLAR_LABEL,
-  buildInstagramCaption,
-} from "@/lib/marketing/formatExport";
-
 type CarouselListItem = {
   id: string;
   forDate: string;
@@ -204,27 +199,6 @@ export function MarketingCarouselTool() {
     }
   }
 
-  async function handleGenerate() {
-    setGenerating(true);
-    setMsg(null);
-    try {
-      const res = await fetch("/api/marketing/carousel", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ forDate }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = (await res.json()) as { carousel?: CarouselDetail };
-      await loadList();
-      if (json.carousel?.id) {
-        setDetail(json.carousel as CarouselDetail);
-        setCarouselImages([]);
-      }
-    } finally {
-      setGenerating(false);
-    }
-  }
-
   async function handleGenerateCarouselAndImages() {
     setGenerating(true);
     setMsg(null);
@@ -236,7 +210,11 @@ export function MarketingCarouselTool() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ forDate }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as { error?: string };
+        setMsg(err.error ?? `Error al generar el carrusel (HTTP ${res.status}).`);
+        return;
+      }
       const json = (await res.json().catch(() => ({}))) as {
         carousel?: CarouselDetail;
       };
@@ -255,9 +233,14 @@ export function MarketingCarouselTool() {
       const imgJson = (await gen.json().catch(() => ({}))) as {
         images?: { order: number; url: string }[];
         error?: string;
+        detail?: string;
       };
       if (!gen.ok) {
-        setMsg(imgJson.error ?? "El carrusel se generó pero falló la generación de imágenes.");
+        setMsg(
+          imgJson.error ??
+            imgJson.detail ??
+            "El carrusel se generó pero falló la generación de imágenes."
+        );
         await loadDetail(json.carousel.id);
         await loadList();
         return;
@@ -269,33 +252,6 @@ export function MarketingCarouselTool() {
       setTimeout(() => setMsg(null), 4000);
     } finally {
       setGenerating(false);
-      setGeneratingImages(false);
-    }
-  }
-
-  async function generateCarouselImagesForPreview() {
-    if (!detail) return;
-    setGeneratingImages(true);
-    setMsg(null);
-    try {
-      setActivePreview("carousel");
-      const gen = await fetch(`/api/marketing/carousel/${detail.id}/images`, {
-        method: "POST",
-      });
-      const json = (await gen.json().catch(() => ({}))) as {
-        images?: { order: number; url: string }[];
-        error?: string;
-      };
-      if (!gen.ok) {
-        setMsg(json.error ?? "No se pudieron generar las imágenes.");
-        return;
-      }
-      setCarouselImages((json.images ?? []).sort((a, b) => a.order - b.order));
-      await loadDetail(detail.id);
-      await loadList();
-      setMsg("Imágenes del carrusel generadas. Revisa y aprueba para publicar.");
-      setTimeout(() => setMsg(null), 4000);
-    } finally {
       setGeneratingImages(false);
     }
   }
@@ -353,7 +309,11 @@ export function MarketingCarouselTool() {
           body: JSON.stringify({ forDate }),
         });
         if (!created.ok) {
-          setMsg("No se pudo generar la frase del día (no existe carrusel para esa fecha).");
+          const ce = (await created.json().catch(() => ({}))) as { error?: string };
+          setMsg(
+            ce.error ??
+              "No se pudo crear el carrusel para esa fecha (revisa la base de datos)."
+          );
           return;
         }
         const createdJson = (await created.json().catch(() => ({}))) as {
@@ -373,7 +333,15 @@ export function MarketingCarouselTool() {
         { method: "POST" }
       );
       if (!res.ok) {
-        setMsg("No se pudo generar la imagen de la frase del día.");
+        const err = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          detail?: string;
+        };
+        setMsg(
+          err.error ??
+            err.detail ??
+            "No se pudo generar la imagen de la frase del día."
+        );
         return;
       }
       const img = await fetch(
@@ -510,20 +478,6 @@ export function MarketingCarouselTool() {
       setPublishingPhrase(false);
     }
   }
-
-  function copyCaption() {
-    if (!detail?.slides) return;
-    const text = buildInstagramCaption(detail.slides);
-    void navigator.clipboard.writeText(text).then(() => {
-      setMsg("Leyenda copiada al portapapeles.");
-      setTimeout(() => setMsg(null), 2500);
-    });
-  }
-
-  const captionPreview = useMemo(() => {
-    if (!detail?.slides?.length) return "";
-    return buildInstagramCaption(detail.slides);
-  }, [detail]);
 
   async function openDayFromWeek(key: string) {
     setForDate(key);

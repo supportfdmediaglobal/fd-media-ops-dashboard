@@ -23,6 +23,25 @@ model Service {
 
   checks    Check[]
   incidents Incident[]
+  agentRule AgentRule?
+}
+
+enum AgentActionType {
+  EMAIL
+}
+
+model AgentRule {
+  id              String          @id @default(cuid())
+  serviceId       String          @unique
+  service         Service         @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  enabled         Boolean         @default(false)
+  action          AgentActionType @default(EMAIL)
+  /** Destinatarios separados por coma o punto y coma. */
+  emailTo         String          @default("")
+  notifyOnOpen    Boolean         @default(true)
+  notifyOnResolve Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 }
 
 model Check {

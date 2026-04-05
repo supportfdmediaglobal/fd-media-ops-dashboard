@@ -1,3 +1,4 @@
+import { DashboardShell } from "@/components/DashboardShell";
 import { LoginClient } from "@/components/LoginClient";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +11,9 @@ export default async function LoginPage({
   const sp = searchParams ? await searchParams : undefined;
   const next = sp?.next ?? "/";
   return (
-    <LoginClient nextPath={next} />
+    <DashboardShell auth="login">
+      <LoginClient nextPath={next} />
+    </DashboardShell>
   );
 }
 

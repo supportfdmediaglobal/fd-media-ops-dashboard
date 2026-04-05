@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import archiver from "archiver";
 import fs from "fs";
-import { PassThrough } from "stream";
+import { PassThrough, Readable } from "stream";
 import { outputDirForCarousel } from "@/lib/marketing/imageGen";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +36,7 @@ export async function GET(
   archive.directory(dir, false);
   void archive.finalize();
 
-  return new NextResponse(stream as any, {
+  return new NextResponse(Readable.toWeb(stream) as unknown as BodyInit, {
     status: 200,
     headers: {
       "Content-Type": "application/zip",

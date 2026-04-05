@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import type { MonitoreoPayload } from "@/lib/monitoreoData";
 import { downloadCsv, rowsToCsv } from "@/lib/csv";
+import { AddServiceForm } from "@/components/monitoreo/AddServiceForm";
 
 function formatLocal(iso: string | null) {
   if (!iso) return "—";
@@ -85,17 +86,22 @@ export function MonitoreoPanel({ data }: { data: MonitoreoPayload }) {
     disponibilidad: false,
   });
 
+  /** Formulario “Agregar servicio”: visible por defecto; el botón del header vuelve a abrirlo. */
+  const [addServiceOpen, setAddServiceOpen] = useState(true);
+
   const toggle = (id: string) =>
     setOpenMap((m) => ({ ...m, [id]: !m[id] }));
 
   useEffect(() => {
     const raw = window.location.hash.replace(/^#/, "");
-    if (SECTION_IDS.includes(raw as (typeof SECTION_IDS)[number])) {
-      setOpenMap((m) => ({ ...m, [raw]: true }));
+    if (!SECTION_IDS.includes(raw as (typeof SECTION_IDS)[number])) return;
+    const id = raw;
+    queueMicrotask(() => {
+      setOpenMap((m) => ({ ...m, [id]: true }));
       window.requestAnimationFrame(() => {
-        document.getElementById(raw)?.scrollIntoView({ behavior: "smooth" });
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
       });
-    }
+    });
   }, []);
 
   const exportSummary = () => {
@@ -200,13 +206,29 @@ export function MonitoreoPanel({ data }: { data: MonitoreoPayload }) {
             Generado: {formatLocal(data.generatedAt)}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={exportAll}
-          className="shrink-0 rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-        >
-          Exportar todo (4 CSV)
-        </button>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setAddServiceOpen(true);
+              window.requestAnimationFrame(() => {
+                document
+                  .getElementById("agregar-servicio")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              });
+            }}
+            className="rounded-xl border border-black/15 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 dark:border-white/15 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-white/10"
+          >
+            + Agregar servicio
+          </button>
+          <button
+            type="button"
+            onClick={exportAll}
+            className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          >
+            Exportar todo (4 CSV)
+          </button>
+        </div>
       </div>
 
       {emptyHint ? (
@@ -214,6 +236,8 @@ export function MonitoreoPanel({ data }: { data: MonitoreoPayload }) {
           {emptyHint}
         </div>
       ) : null}
+
+      <AddServiceForm open={addServiceOpen} onOpenChange={setAddServiceOpen} />
 
       <div className="mt-8 grid gap-4">
         <Section

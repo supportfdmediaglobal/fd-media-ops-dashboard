@@ -11,25 +11,49 @@ function authSecretKey() {
   return new TextEncoder().encode(secret);
 }
 
-export async function ensureAdminUser() {
-  const email = process.env.ADMIN_EMAIL;
-  const password = process.env.ADMIN_PASSWORD;
-  if (!email || !password) return;
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return;
-
-  const passwordHash = await bcrypt.hash(password, 12);
-  await prisma.user.create({
-    data: {
-      email,
-      passwordHash,
-    },
+async function findUserByEmail(email: string) {
+  const normalized = normalizeEmail(email);
+  return prisma.user.findFirst({
+    where: { email: { equals: normalized, mode: "insensitive" } },
   });
 }
 
+/** Crea el admin si no existe; si existe pero ADMIN_PASSWORD no coincide con el hash guardado, actualiza el hash (p. ej. cambiaste `.env`). */
+export async function ensureAdminUser() {
+  const rawEmail = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+  if (!rawEmail || !password) return;
+
+  const email = normalizeEmail(rawEmail);
+  const existing = await findUserByEmail(email);
+
+  if (!existing) {
+    const passwordHash = await bcrypt.hash(password, 12);
+    await prisma.user.create({
+      data: {
+        email,
+        passwordHash,
+      },
+    });
+    return;
+  }
+
+  const matchesEnv = await bcrypt.compare(password, existing.passwordHash);
+  if (!matchesEnv) {
+    const passwordHash = await bcrypt.hash(password, 12);
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: { passwordHash, email },
+    });
+  }
+}
+
 export async function verifyCredentials(email: string, password: string) {
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await findUserByEmail(email);
   if (!user) return null;
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return null;

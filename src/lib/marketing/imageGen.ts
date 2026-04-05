@@ -1,21 +1,12 @@
 import path from "path";
 
+/** URL pública (Instagram Graph, enlaces absolutos a /generated/...). */
 export function getBaseUrl() {
   return (
     process.env.APP_BASE_URL?.trim() ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
     "http://localhost:3002"
   );
-}
-
-export function slideRenderUrl(carouselId: string, order: number) {
-  const base = getBaseUrl().replace(/\/+$/, "");
-  return `${base}/marketing/render/${carouselId}/${order}`;
-}
-
-export function phraseRenderUrl(carouselId: string) {
-  const base = getBaseUrl().replace(/\/+$/, "");
-  return `${base}/marketing/render/${carouselId}/phrase`;
 }
 
 export function outputDirForCarousel(carouselId: string) {

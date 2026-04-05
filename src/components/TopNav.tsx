@@ -37,6 +37,7 @@ export function TopNav() {
     <nav className="flex flex-wrap items-center gap-2">
       <NavLink href="/" label="Inicio" />
       <NavLink href="/monitoreo" label="Monitoreo" matchPrefix />
+      <NavLink href="/agent" label="Agente" matchPrefix />
       <NavLink href="/marketing" label="Marketing" matchPrefix />
     </nav>
   );

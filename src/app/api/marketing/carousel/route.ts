@@ -45,33 +45,34 @@ export async function GET(req: Request) {
 
 /** Generar o regenerar carrusel: rotación secuencial por pilar (sin repetir hasta cerrar el ciclo). */
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => ({}))) as {
-    forDate?: string;
-  };
+  try {
+    const body = (await req.json().catch(() => ({}))) as {
+      forDate?: string;
+    };
 
-  const key =
-    parseDateKey(body.forDate) ??
-    new Date().toISOString().slice(0, 10);
+    const key =
+      parseDateKey(body.forDate) ??
+      new Date().toISOString().slice(0, 10);
 
-  const forDate = dateFromKey(key);
-  const title = `Carrusel FD Bienestar · ${key}`;
+    const forDate = dateFromKey(key);
+    const title = `Carrusel FD Bienestar · ${key}`;
 
-  const emoLen = EMOTIONAL_MODULES.length;
-  const finLen = FINANCIAL_MODULES.length;
-  const nutLen = NUTRITION_MODULES.length;
+    const emoLen = EMOTIONAL_MODULES.length;
+    const finLen = FINANCIAL_MODULES.length;
+    const nutLen = NUTRITION_MODULES.length;
 
-  const pillarMap: Record<
-    ReturnType<typeof generateCarouselSlidesFromIndices>[number]["pillar"],
-    ContentPillar
-  > = {
-    COVER: ContentPillar.COVER,
-    EMOTIONAL: ContentPillar.EMOTIONAL,
-    FINANCIAL: ContentPillar.FINANCIAL,
-    NUTRITION: ContentPillar.NUTRITION,
-    CLOSING: ContentPillar.CLOSING,
-  };
+    const pillarMap: Record<
+      ReturnType<typeof generateCarouselSlidesFromIndices>[number]["pillar"],
+      ContentPillar
+    > = {
+      COVER: ContentPillar.COVER,
+      EMOTIONAL: ContentPillar.EMOTIONAL,
+      FINANCIAL: ContentPillar.FINANCIAL,
+      NUTRITION: ContentPillar.NUTRITION,
+      CLOSING: ContentPillar.CLOSING,
+    };
 
-  const created = await prisma.$transaction(async (tx) => {
+    const created = await prisma.$transaction(async (tx) => {
     const existing = await tx.marketingCarousel.findUnique({
       where: { forDate },
     });
@@ -142,14 +143,20 @@ export async function POST(req: Request) {
       });
     }
 
-    return tx.marketingCarousel.findUnique({
-      where: { id: carousel.id },
-      include: { slides: { orderBy: { order: "asc" } } },
+      return tx.marketingCarousel.findUnique({
+        where: { id: carousel.id },
+        include: { slides: { orderBy: { order: "asc" } } },
+      });
     });
-  });
 
-  return NextResponse.json({
-    ok: true,
-    carousel: created,
-  });
+    return NextResponse.json({
+      ok: true,
+      carousel: created,
+    });
+  } catch (e) {
+    console.error("[marketing/carousel POST]", e);
+    const message =
+      e instanceof Error ? e.message : "No se pudo generar el carrusel";
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  }
 }
