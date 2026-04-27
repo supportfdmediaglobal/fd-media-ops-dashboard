@@ -40,6 +40,9 @@ yarn-error.log*
 .env*
 .docker.env
 
+# DB exports (pueden contener datos sensibles; para versionar uno: git add -f backups/nombre.sql)
+backups/*.sql
+
 # generated marketing assets (local / server)
 /public/generated/
 

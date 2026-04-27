@@ -26,6 +26,11 @@ model Service {
   agentRule AgentRule?
 }
 
+/** Claves de DEFAULT_SERVICES que el usuario eliminó; no reinsertar en ensureDefaultServices. */
+model SeedServiceExclusion {
+  key String @id
+}
+
 enum AgentActionType {
   EMAIL
 }

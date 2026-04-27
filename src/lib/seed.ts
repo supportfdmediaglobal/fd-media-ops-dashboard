@@ -2,7 +2,16 @@ import { prisma } from "@/lib/db";
 import { DEFAULT_SERVICES } from "@/lib/services";
 
 export async function ensureDefaultServices() {
+  const excluded = new Set(
+    (
+      await prisma.seedServiceExclusion.findMany({
+        select: { key: true },
+      })
+    ).map((r) => r.key)
+  );
+
   for (const s of DEFAULT_SERVICES) {
+    if (excluded.has(s.id)) continue;
     await prisma.service.upsert({
       where: { key: s.id },
       update: {

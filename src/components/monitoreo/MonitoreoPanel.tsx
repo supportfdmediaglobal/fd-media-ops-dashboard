@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { MonitoreoPayload } from "@/lib/monitoreoData";
 import { downloadCsv, rowsToCsv } from "@/lib/csv";
@@ -77,6 +78,7 @@ function Section({
 const SECTION_IDS = ["resumen", "incidentes", "checks", "disponibilidad"] as const;
 
 export function MonitoreoPanel({ data }: { data: MonitoreoPayload }) {
+  const router = useRouter();
   const stamp = () => new Date().toISOString().slice(0, 10);
 
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({
@@ -88,6 +90,35 @@ export function MonitoreoPanel({ data }: { data: MonitoreoPayload }) {
 
   /** Formulario “Agregar servicio”: visible por defecto; el botón del header vuelve a abrirlo. */
   const [addServiceOpen, setAddServiceOpen] = useState(true);
+
+  const [deletingKey, setDeletingKey] = useState<string | null>(null);
+
+  async function deleteService(key: string, name: string) {
+    const ok = window.confirm(
+      `¿Eliminar «${name}» del monitoreo? Se borrarán también los checks e incidentes asociados.`
+    );
+    if (!ok) return;
+    setDeletingKey(key);
+    try {
+      const res = await fetch(
+        `/api/services/${encodeURIComponent(key)}`,
+        { method: "DELETE" }
+      );
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+      };
+      if (!res.ok || !json.ok) {
+        window.alert(json.error ?? `Error HTTP ${res.status}`);
+        return;
+      }
+      router.refresh();
+    } catch {
+      window.alert("No se pudo eliminar el servicio.");
+    } finally {
+      setDeletingKey(null);
+    }
+  }
 
   const toggle = (id: string) =>
     setOpenMap((m) => ({ ...m, [id]: !m[id] }));
@@ -257,6 +288,9 @@ export function MonitoreoPanel({ data }: { data: MonitoreoPayload }) {
                   <th className="px-3 py-2 font-medium">Último check</th>
                   <th className="px-3 py-2 font-medium">Latencia</th>
                   <th className="px-3 py-2 font-medium">Incidente</th>
+                  <th className="px-3 py-2 font-medium w-28 text-right">
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/5 dark:divide-white/10">
@@ -299,6 +333,17 @@ export function MonitoreoPanel({ data }: { data: MonitoreoPayload }) {
                       {s.openIncidentStartedAt
                         ? `Abierto desde ${formatLocal(s.openIncidentStartedAt)}`
                         : "—"}
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => deleteService(s.key, s.name)}
+                        disabled={deletingKey !== null}
+                        className="rounded-lg border border-black/10 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:text-red-300 dark:hover:bg-red-950/40"
+                        aria-label={`Eliminar ${s.name} del monitoreo`}
+                      >
+                        {deletingKey === s.key ? "…" : "Eliminar"}
+                      </button>
                     </td>
                   </tr>
                 ))}
